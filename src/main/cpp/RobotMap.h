@@ -54,10 +54,10 @@ private:
 	//	Mappings of IO channels relating the channel numbers to constructor arguments
 	//  of the motor controllers, actuators and sensors.
 	//    	CANTalon CAN IO - Drive Motor Controllers
-		static constexpr int FRONTLEFT = 2;  // check motor positions on two-speed transmission
+		static constexpr int FRONTLEFT = 3;  // check motor positions on two-speed transmission
 		static constexpr int REARLEFT = 1;   // identify the front and back motor on each side with
 		static constexpr int FRONTRIGHT = 4;  // the CAN IO numbers
-		static constexpr int REARRIGHT = 3;
+		static constexpr int REARRIGHT = 2;
 
 
 

@@ -4,12 +4,12 @@
 
 
 
-#include "../RobotMap.h"
+
 #include "DriveTrain.h"
-#include "../Commands/DriveJoysticksGyro.h"//changed del
+#include "../Commands/DriveJoysticksGyro.h"
 #include "math.h"
 #include "SmartDashboard/SmartDashboard.h"
-#include "../Commands/DriveJoysticksGyro.h"
+
 
  	double DriveTrain::Kp1 = 0.075; // old 0.045
 	double DriveTrain::Ki1 = 0.00;
