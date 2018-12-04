@@ -1,7 +1,6 @@
 
 
 #include "RobotMap.h"
-//#include "LiveWindow/LiveWindow.h"
 #include "WPILib.h"
 #include "AHRS.h"
 #include "ADXRS450_Gyro.h"
@@ -20,16 +19,15 @@ std::shared_ptr<WPI_TalonSRX> RobotMap::driveTrainFrontRight;
 std::shared_ptr<WPI_TalonSRX> RobotMap::driveTrainRearRight;
 std::shared_ptr<SpeedControllerGroup> RobotMap::m_right;
 std::shared_ptr<DifferentialDrive> RobotMap::diffDrive;
+std::shared_ptr<Encoder> RobotMap::rightWheelEncoderDevice;
+std::shared_ptr<DoubleSolenoid> RobotMap::pneumaticShiftCyl;
 
-//std::shared_ptr<MecanumDrive> RobotMap::m_mecanumDrive;
-
-std::shared_ptr<PIDController> RobotMap::driveTrainGyroPID; // address via reset of PIDController is set in DriveTrain
+//std::shared_ptr<MecanumDrive> RobotMap::m_mecanumDrive;;
 
 void RobotMap::init() {
 
-//    LiveWindow *lw = LiveWindow::GetInstance();
 // Assign a shared_ptr to an object formed from software libraries, e.g., makes pneumaticShift point to new DoubleSolenoid()
-// Numbers in CANTalon() arguments refer to CAN IDs for each wheel motor controller
+// WPI_TalonSRX arguments refer to CAN IDs for each wheel motor controller
 
 
 #if USES_NAVX_GYRO
@@ -49,10 +47,19 @@ void RobotMap::init() {
     m_right.reset(new SpeedControllerGroup(*driveTrainFrontRight, *driveTrainRearRight));
     diffDrive.reset(new DifferentialDrive(*m_left, *m_right));
 
-//    m_mecanumDrive.reset(new MecanumDrive(*driveTrainFrontLeft, *driveTrainRearLeft,
+
+// 1, 2 DIO slots, 3rd argument - reverse direction, 4th argument samples per pulse cycle
+    rightWheelEncoderDevice.reset(new Encoder(RT_TRANS_ENCODER_CH_A, RT_TRANS_ENCODER_CH_B, true, Encoder::k4X));
+
+     pneumaticShiftCyl.reset(new DoubleSolenoid(TRANS_FWD_CH_0, TRANS_REV_CH_1) ); // PCM IDs 0, 1 for transmission shifter
+
+
+//---------------------------------------------------------------------------------------
+//   use if Mecanum drive is used on robot
+//   m_mecanumDrive.reset(new MecanumDrive(*driveTrainFrontLeft, *driveTrainRearLeft,
 //    		*driveTrainFrontRight, *driveTrainRearRight));
 
-//    diffDrive->SetSafetyEnabled(false);
-//    diffDrive->SetExpiration(0.5);   // sets motor timeout @ 500 ms
+    diffDrive->SetSafetyEnabled(false);
+    diffDrive->SetExpiration(0.5);   // sets motor timeout @ 500 ms
 
 }

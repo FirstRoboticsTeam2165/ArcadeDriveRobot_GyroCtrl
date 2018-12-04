@@ -14,23 +14,33 @@
 *  Upgraded to VScode IDE and re-located to: 2019_Test_Arcade_VScode/Arcade_2018
 *  Obtained a sucessful build 10/5/18 
 *  See 2019 FIRST Robotics Notebook page 11-12 for additional details
-
+*
 *  This project uses:
+*  	- a single joystick, Logitech Extreme 3D PRO, is used with gyro control to drive in a
+*  		straight line.
 *  	- a arcade drive train with four motors
 *  	- an option to select one of two gyros by setting #define in RobotMap.h to
 *  		USES_NAVX_GYRO 1 if navX_MXP gyro is used or setting it to USES_NAVX_GYRO 0 if
 *  		ADXRS450 gyro is used.
-*  	- a single joystick, Logitech Extreme 3D PRO, is used with gyro control to drive in a
-*  		straight line
+*  del 10/5/18
+*	- command has been included to drive a specified distance (by encoder) in a 
+*	    straight line controlled by gyro. The teleop version of this command is
+*		initiated by button 5 on joystick.
+*	- a two speed transmission is controlled by pneumatic accuators.  Button 3 shifts to high
+*		speed, and Button 4 shifts to Low speed.
+*	- a simple autonomous routine is selected by setting DB/Button 0 = 1 on the DriverStation.	   - 
+*	- code for usb camera added in Robot.cpp
 *
-*  del
-*
+*  del 12/3/18
+*********************************************************************************************************
 */
 #include "Robot.h"
 
 // 	static smart pointers to provide access to the various Commands,
 //  e.g., see: Requires(Robot::driveTrain.get()); and Robot::driveTrain->GetFL_MotorCurrent();
 	std::shared_ptr<DriveTrain> Robot::driveTrain = nullptr;
+	std::shared_ptr<RightWheelEncoder> Robot::rightWheelEncoder = nullptr;
+	std::shared_ptr<PneumaticShift> Robot::pneumaticShift = nullptr;
 	std::unique_ptr<OI> Robot::oi;
 
 
@@ -39,7 +49,10 @@ void Robot::RobotInit() {
 //  Set up usb and axis cameras
 //	CameraServer::GetInstance()->StartAutomaticCapture();  // usb camera plugged into roboRIO
 //	CameraServer::GetInstance()->AddAxisCamera("axis-camera.local"); // axis camera plugged into radio
-
+	cs::UsbCamera m_camera = CameraServer::GetInstance()->StartAutomaticCapture();  // usb camera plugged into roboRIO
+	m_camera.SetExposureManual(50);
+	m_camera.SetResolution(320,240);
+	
 // Create an instance of Subsystem - will get an error until the Subsystem classes are created in a Subsystems file
 //  reset(p) deletes previous ptr (if there is one) and acquires new ptr to object, e.g., a pointer to DriverTrain()
 //  reset is a member function of shared_ptr therefore accessing it is done by the . access operator, not ->
@@ -52,6 +65,8 @@ void Robot::RobotInit() {
 
 //  static smart pointers to objects of classes defined here
 	driveTrain.reset(new DriveTrain());
+	rightWheelEncoder.reset(new RightWheelEncoder());
+	pneumaticShift.reset(new PneumaticShift());
 	oi.reset(new OI());
 
 // instantiate the command used for the autonomous period
@@ -73,20 +88,6 @@ void Robot::DisabledPeriodic() {
 void Robot::AutonomousInit() {  // supply methods and set variables to initiate autonomous period
 //  Set Autonomous Rountine with Drive Station DB/Buttons
 
-	std::string m_gameData;
-	m_gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage();
-	if(m_gameData[0] == 'L') {
-		printf("Left Side 1st Switch \n");
-	}
-	else  {
-		printf("Right Side 1st Switch \n");
-	}
-	if(m_gameData[1] == 'L') {
-		printf("Left Side Scaler \n");
-	}
-	else  {
-		printf("Right Side Scaler \n");
-	}
 
 	GetButtonAuto();
 	if (autonomousCommand.get() != nullptr)
@@ -115,7 +116,7 @@ void Robot::TestPeriodic() {  // used LiveWindows when in Driver Station Test Mo
 }
 
 
-//  Function to get DB/Buttons from Driver Station to run specific autonomous routines
+//  Method to get DB/Buttons from Driver Station to run specific autonomous routines
 void Robot::GetButtonAuto() {// method to select autonomous function
 	int bval = 0;
 	bool buttonstate = false;
@@ -136,12 +137,12 @@ void Robot::GetButtonAuto() {// method to select autonomous function
 	{
 		case 0:
 		{
-			autonomousCommand.reset(new AutonomousCommand() );
+			autonomousCommand.reset(new  AutonomousNoOp() );
 		}
 		break;
 		case 1:
 		{
-			autonomousCommand.reset(new AutonomousNoOp());
+			autonomousCommand.reset(new MoveDistance(96.0, 0.6, 10.0));
 		}
 		break;
 

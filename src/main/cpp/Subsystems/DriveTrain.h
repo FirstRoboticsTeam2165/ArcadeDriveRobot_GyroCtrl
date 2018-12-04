@@ -63,6 +63,8 @@ public:
 	double PidOut();  // Output from PID controller
 	bool AtSetPoint();
 	void SetAngleSetPt(double angle);
+	double GetPID_Parm_Kp();
+	void SetPID_Parm_Kp(double);
 	void ChangePID_Parm(double kp, double ki, double kd);
 	void EnableGyroPID();
 	void DisableGyroPID();

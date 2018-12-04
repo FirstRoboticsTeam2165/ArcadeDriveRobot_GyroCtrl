@@ -1,5 +1,9 @@
 /* We used the PIDController Class so that we may change PID parameters if we choose.
  * PIDSubsystem does not uses const PID parameters.
+ * 
+ * ***** IMPORTANT  ******
+ * Gyro ADXRS450 has limited methods defined. Check to see if needed methods
+ * are defined in the #else sections of this code before using.
  */
 
 
@@ -35,9 +39,6 @@ DriveTrain::DriveTrain() : Subsystem("DriveTrain") {
 
 //    m_mecanum = RobotMap::m_mecanumDrive;
 
-    gyroPid = RobotMap::driveTrainGyroPID;
-
-
     gyroPid.reset(new PIDController(Kp1, Ki1, Kd1 ,this, this, 0.02));  // this - a pointer to DriveTrain class
 // 1st this refers to PIDOut and 2nd this refers to PIDSource - here both base-classes of DriveTain
 
@@ -65,7 +66,7 @@ DriveTrain::DriveTrain() : Subsystem("DriveTrain") {
     frontRightCntrl->SetInverted(false);
     rearRightCntrl->SetInverted(false);
 
-    ApplyWheelBrakes();  // robot set in coast condition
+    ReleaseWheelBrakes();  // robot set in coast condition
 
 
 }
@@ -81,7 +82,7 @@ void DriveTrain::InitDefaultCommand() {
 
 	void DriveTrain::PIDWrite(double output){
 
-		this->m_rotate = output;
+		m_rotate = output;
 		SmartDashboard::PutNumber("PID output", m_rotate);
 	}
 
@@ -94,6 +95,14 @@ void DriveTrain::InitDefaultCommand() {
 
 		gyroPid->SetSetpoint(angle);
 	}
+
+double DriveTrain::GetPID_Parm_Kp() {
+	return gyroPid->GetP();
+}
+
+void DriveTrain::SetPID_Parm_Kp(double kp) {
+	gyroPid->SetP(kp);
+}
 
 	void DriveTrain::ChangePID_Parm(double kp, double ki, double kd) {
 
@@ -147,7 +156,7 @@ void DriveTrain::InitDefaultCommand() {
 	bool DriveTrain::AtSetPoint()
 	{
 
-		return (fabs(navX->GetAngle() - gyroPid->GetSetpoint()) < 1.0);
+		return (fabs(navX->GetAngle()) - fabs(gyroPid->GetSetpoint()) < 1.0);
 	}
 
 	double DriveTrain::GetAngleRate()  {  // degrees/second
